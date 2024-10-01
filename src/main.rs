@@ -1,3 +1,5 @@
+use poush::token;
 fn main() {
-    println!("Hello, world!");
+    let item = token::Token::ILLEGAL("=");
+    println!("{:?}",item);
 }
