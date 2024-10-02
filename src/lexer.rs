@@ -44,7 +44,7 @@ impl Lexer {
             '{' => Token::LBRACE,
             '}' => Token::RBRACE,
             '\0' => Token::EOF,
-            _ => Token::ILLEGAL('\0'),
+            _ => Token::ILLEGAL(self.ch),
         };
     }
 }
@@ -55,15 +55,24 @@ mod tests {
 
     #[test]
     fn test_next_token() {
-        let input = String::from("=+(){},;");
+        let code = r#"let five = 5;
+            let ten = 10;
+            let add = fn(x, y) {
+            x + y;
+            };
+            let result = add(five, ten);
+        "#;
+        let input = String::from(code);
         let tests = [
+            Token::LET,
+            Token::IDENT("five"),
             Token::ASSIGN,
-            Token::PLUS,
-            Token::LPAREN,
-            Token::RPAREN,
-            Token::LBRACE,
-            Token::RBRACE,
-            Token::COMMA,
+            Token::INT("5"),
+            Token::SEMICOLON,
+            Token::LET,
+            Token::IDENT("ten"),
+            Token::ASSIGN,
+            Token::INT("10"),
             Token::SEMICOLON,
         ];
         let mut lex = Lexer::new(input);
