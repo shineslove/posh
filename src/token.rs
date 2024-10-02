@@ -1,9 +1,5 @@
-#[derive(Debug)]
-pub enum Token<'a> {
-    ILLEGAL(&'a str),
-    IDENT(&'a str),
-    INT(&'a str),
-    EOF,
+#[derive(Debug, PartialEq)]
+pub enum Token {
     ASSIGN,
     PLUS,
     COMMA,
@@ -14,4 +10,8 @@ pub enum Token<'a> {
     RBRACE,
     FUNCTION,
     LET,
+    ILLEGAL(char),
+    IDENT(char),
+    INT(char),
+    EOF,
 }
