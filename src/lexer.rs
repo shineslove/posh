@@ -32,8 +32,20 @@ impl Lexer {
         self.position = self.read_position;
         self.read_position += 1;
     }
+    fn skip_whitespace(&mut self) {
+        while self.ch.is_whitespace() {
+            self.read_char();
+        }
+    }
+    fn lookup_ident(&mut self) -> Token {
+        return match self.read_identifier() {
+            "fn" => Token::FUNCTION,
+            "let" => Token::LET,
+            other => Token::IDENT(other),
+        };
+    }
     fn next_token(&mut self) -> Token {
-        self.read_char();
+        self.skip_whitespace();
         return match self.ch {
             '=' => Token::ASSIGN,
             ';' => Token::SEMICOLON,
@@ -44,8 +56,27 @@ impl Lexer {
             '{' => Token::LBRACE,
             '}' => Token::RBRACE,
             '\0' => Token::EOF,
-            _ => Token::ILLEGAL(self.ch),
+            other => {
+                if self.is_letter() {
+                    return self.lookup_ident();
+                } else {
+                    Token::ILLEGAL(other)
+                }
+            }
         };
+    }
+    fn is_letter(&mut self) -> bool {
+        return 'a' <= self.ch && self.ch <= 'z'
+            || 'A' <= self.ch && self.ch <= 'Z'
+            || self.ch == '_';
+    }
+
+    fn read_identifier(&mut self) -> &str {
+        let position = self.position;
+        while self.is_letter() {
+            self.read_char();
+        }
+        return &self.input[position..self.position];
     }
 }
 
@@ -74,6 +105,33 @@ mod tests {
             Token::ASSIGN,
             Token::INT("10"),
             Token::SEMICOLON,
+            Token::LET,
+            Token::IDENT("add"),
+            Token::ASSIGN,
+            Token::IDENT("fn"),
+            Token::LPAREN,
+            Token::IDENT("x"),
+            Token::COMMA,
+            Token::IDENT("y"),
+            Token::RPAREN,
+            Token::LBRACE,
+            Token::IDENT("x"),
+            Token::PLUS,
+            Token::IDENT("y"),
+            Token::SEMICOLON,
+            Token::RBRACE,
+            Token::SEMICOLON,
+            Token::LET,
+            Token::IDENT("result"),
+            Token::ASSIGN,
+            Token::IDENT("add"),
+            Token::LBRACE,
+            Token::IDENT("five"),
+            Token::COMMA,
+            Token::IDENT("ten"),
+            Token::RPAREN,
+            Token::SEMICOLON,
+            Token::EOF,
         ];
         let mut lex = Lexer::new(input);
         for test in tests {
