@@ -1,11 +1,12 @@
 use core::str;
+use std::rc::Rc;
 
 use super::token::Token;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 struct Lexer {
-    input: Vec<u8>,
+    input: Rc<str>,
     position: usize,
     read_position: usize,
     ch: u8,
@@ -13,7 +14,7 @@ struct Lexer {
 
 #[allow(dead_code)]
 impl Lexer {
-    fn new(input: Vec<u8>) -> Self {
+    fn new(input: Rc<str>) -> Self {
         let mut lex = Lexer {
             input,
             position: 0,
@@ -28,7 +29,7 @@ impl Lexer {
         if self.read_position >= self.input.len() {
             self.ch = 0;
         } else {
-            self.ch = self.input[self.read_position];
+            self.ch = self.input.as_bytes()[self.read_position];
         }
         self.position = self.read_position;
         self.read_position += 1;
@@ -41,10 +42,14 @@ impl Lexer {
     }
 
     fn lookup_ident(&mut self) -> Token {
-        let ident = self.read_identifier();
-        return match ident {
+        return match self.read_identifier() {
             "let" => Token::LET,
             "fn" => Token::FUNCTION,
+            "true" => Token::TRUE,
+            "false" => Token::FALSE,
+            "if" => Token::IF,
+            "else" => Token::ELSE,
+            "return" => Token::RETURN,
             other => Token::IDENT(other),
         };
     }
@@ -86,8 +91,7 @@ impl Lexer {
         while self.ch.is_ascii_digit() {
             self.read_char();
         }
-        let input = &self.input[position..self.position];
-        return str::from_utf8(input).expect("string from u8 to succeed");
+        return &self.input[position..self.position];
     }
 
     fn read_identifier(&mut self) -> &str {
@@ -95,8 +99,7 @@ impl Lexer {
         while self.ch.is_ascii_alphabetic() || self.ch == b'_' {
             self.read_char();
         }
-        let input = &self.input[position..self.position];
-        return str::from_utf8(input).expect("string from u8 to succeed");
+        return &self.input[position..self.position];
     }
 }
 
@@ -106,7 +109,7 @@ mod tests {
 
     #[test]
     fn test_next_token() {
-        let code = r#"let five = 5;
+        let input = r#"let five = 5;
             let ten = 10;
             let add = fn(x, y) {
             x + y;
@@ -114,8 +117,12 @@ mod tests {
             let result = add(five, ten);
             !-/*5;
             5 < 10 > 5;
+            if (5 < 10) {
+               return true; 
+            } else {
+               return false;
+            }
         "#;
-        let input = code.bytes().collect();
         let tests = [
             Token::LET,
             Token::IDENT("five"),
@@ -165,9 +172,26 @@ mod tests {
             Token::GT,
             Token::INT("5"),
             Token::SEMICOLON,
+            Token::IF,
+            Token::LPAREN,
+            Token::INT("5"),
+            Token::LT,
+            Token::INT("10"),
+            Token::RPAREN,
+            Token::LBRACE,
+            Token::RETURN,
+            Token::TRUE,
+            Token::SEMICOLON,
+            Token::RBRACE,
+            Token::ELSE,
+            Token::LBRACE,
+            Token::RETURN,
+            Token::FALSE,
+            Token::SEMICOLON,
+            Token::RBRACE,
             Token::EOF,
         ];
-        let mut lex = Lexer::new(input);
+        let mut lex = Lexer::new(Rc::from(input));
         for test in tests {
             let tok = lex.next_token();
             assert_eq!(tok, test);
