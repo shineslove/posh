@@ -55,17 +55,39 @@ impl Lexer {
         };
     }
 
+    fn peek_char(&self) -> u8 {
+        if self.read_position >= self.input.len() {
+            return 0;
+        } else {
+            return self.input.as_bytes()[self.read_position];
+        }
+    }
+
     fn next_token(&mut self) -> Token {
         self.skip_whitespace();
         let tok = match self.ch {
-            b'=' => Token::ASSIGN,
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::EQ
+                } else {
+                    Token::ASSIGN
+                }
+            }
             b';' => Token::SEMICOLON,
             b'(' => Token::LPAREN,
             b')' => Token::RPAREN,
             b',' => Token::COMMA,
             b'+' => Token::PLUS,
             b'-' => Token::MINUS,
-            b'!' => Token::BANG,
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::NotEQ
+                } else {
+                    Token::BANG
+                }
+            }
             b'/' => Token::SLASH,
             b'*' => Token::ASTERISK,
             b'<' => Token::LT,

@@ -21,6 +21,8 @@ pub enum Token<'t> {
     IF,
     ELSE,
     RETURN,
+    EQ,
+    NotEQ,
     ILLEGAL(u8),
     IDENT(&'t str),
     INT(&'t str),

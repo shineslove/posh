@@ -19,6 +19,8 @@ mod tests {
             } else {
                return false;
             }
+            10 == 10;
+            10 != 9;
         "#;
         let tests = [
             Token::LET,
@@ -86,6 +88,14 @@ mod tests {
             Token::FALSE,
             Token::SEMICOLON,
             Token::RBRACE,
+            Token::INT("10"),
+            Token::EQ,
+            Token::INT("10"),
+            Token::SEMICOLON,
+            Token::INT("10"),
+            Token::NotEQ,
+            Token::INT("9"),
+            Token::SEMICOLON,
             Token::EOF,
         ];
         let mut lex = Lexer::new(Rc::from(input));
