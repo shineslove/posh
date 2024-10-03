@@ -1,82 +1,102 @@
+use core::str;
+
 use super::token::Token;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 struct Lexer {
-    input: String,
+    input: Vec<u8>,
     position: usize,
     read_position: usize,
-    ch: char,
+    ch: u8,
 }
 
 #[allow(dead_code)]
 impl Lexer {
-    fn new(input: String) -> Self {
-        return Lexer {
+    fn new(input: Vec<u8>) -> Self {
+        let mut lex = Lexer {
             input,
             position: 0,
             read_position: 0,
-            ch: '\0',
+            ch: 0,
         };
+        lex.read_char();
+        return lex;
     }
+
     fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
-            self.ch = '\0'
+            self.ch = 0;
         } else {
-            self.ch = self
-                .input
-                .chars()
-                .nth(self.read_position)
-                .expect("should be here")
+            self.ch = self.input[self.read_position];
         }
         self.position = self.read_position;
         self.read_position += 1;
     }
+
     fn skip_whitespace(&mut self) {
-        while self.ch.is_whitespace() {
+        while self.ch.is_ascii_whitespace() {
             self.read_char();
         }
     }
+
     fn lookup_ident(&mut self) -> Token {
-        return match self.read_identifier() {
-            "fn" => Token::FUNCTION,
+        let ident = self.read_identifier();
+        return match ident {
             "let" => Token::LET,
+            "fn" => Token::FUNCTION,
             other => Token::IDENT(other),
         };
     }
+
     fn next_token(&mut self) -> Token {
         self.skip_whitespace();
-        return match self.ch {
-            '=' => Token::ASSIGN,
-            ';' => Token::SEMICOLON,
-            '(' => Token::LPAREN,
-            ')' => Token::RPAREN,
-            ',' => Token::COMMA,
-            '+' => Token::PLUS,
-            '{' => Token::LBRACE,
-            '}' => Token::RBRACE,
-            '\0' => Token::EOF,
+        let tok = match self.ch {
+            b'=' => Token::ASSIGN,
+            b';' => Token::SEMICOLON,
+            b'(' => Token::LPAREN,
+            b')' => Token::RPAREN,
+            b',' => Token::COMMA,
+            b'+' => Token::PLUS,
+            b'-' => Token::MINUS,
+            b'!' => Token::BANG,
+            b'/' => Token::SLASH,
+            b'*' => Token::ASTERISK,
+            b'<' => Token::LT,
+            b'>' => Token::GT,
+            b'{' => Token::LBRACE,
+            b'}' => Token::RBRACE,
+            0 => Token::EOF,
             other => {
-                if self.is_letter() {
+                if self.ch.is_ascii_alphabetic() {
                     return self.lookup_ident();
+                } else if self.ch.is_ascii_digit() {
+                    return Token::INT(self.read_number());
                 } else {
                     Token::ILLEGAL(other)
                 }
             }
         };
+        self.read_char();
+        return tok;
     }
-    fn is_letter(&mut self) -> bool {
-        return 'a' <= self.ch && self.ch <= 'z'
-            || 'A' <= self.ch && self.ch <= 'Z'
-            || self.ch == '_';
+
+    fn read_number(&mut self) -> &str {
+        let position = self.position;
+        while self.ch.is_ascii_digit() {
+            self.read_char();
+        }
+        let input = &self.input[position..self.position];
+        return str::from_utf8(input).expect("string from u8 to succeed");
     }
 
     fn read_identifier(&mut self) -> &str {
         let position = self.position;
-        while self.is_letter() {
+        while self.ch.is_ascii_alphabetic() || self.ch == b'_' {
             self.read_char();
         }
-        return &self.input[position..self.position];
+        let input = &self.input[position..self.position];
+        return str::from_utf8(input).expect("string from u8 to succeed");
     }
 }
 
@@ -92,8 +112,10 @@ mod tests {
             x + y;
             };
             let result = add(five, ten);
+            !-/*5;
+            5 < 10 > 5;
         "#;
-        let input = String::from(code);
+        let input = code.bytes().collect();
         let tests = [
             Token::LET,
             Token::IDENT("five"),
@@ -108,7 +130,7 @@ mod tests {
             Token::LET,
             Token::IDENT("add"),
             Token::ASSIGN,
-            Token::IDENT("fn"),
+            Token::FUNCTION,
             Token::LPAREN,
             Token::IDENT("x"),
             Token::COMMA,
@@ -125,11 +147,23 @@ mod tests {
             Token::IDENT("result"),
             Token::ASSIGN,
             Token::IDENT("add"),
-            Token::LBRACE,
+            Token::LPAREN,
             Token::IDENT("five"),
             Token::COMMA,
             Token::IDENT("ten"),
             Token::RPAREN,
+            Token::SEMICOLON,
+            Token::BANG,
+            Token::MINUS,
+            Token::SLASH,
+            Token::ASTERISK,
+            Token::INT("5"),
+            Token::SEMICOLON,
+            Token::INT("5"),
+            Token::LT,
+            Token::INT("10"),
+            Token::GT,
+            Token::INT("5"),
             Token::SEMICOLON,
             Token::EOF,
         ];
