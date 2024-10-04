@@ -63,7 +63,7 @@ impl Lexer {
             "if" => Token::IF,
             "else" => Token::ELSE,
             "return" => Token::RETURN,
-            other => Token::IDENT(String::from(other)),
+            other => Token::IDENT(other.into()),
         };
     }
 
@@ -121,12 +121,12 @@ impl Lexer {
         return tok;
     }
 
-    fn read_number(&mut self) -> String {
+    fn read_number(&mut self) -> Rc<str> {
         let position = self.position;
         while self.ch.is_ascii_digit() {
             self.read_char();
         }
-        return String::from(&self.input[position..self.position]);
+        return Rc::from(&self.input[position..self.position]);
     }
 
     fn read_identifier(&mut self) -> &str {

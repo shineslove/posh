@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 #[derive(Debug, PartialEq)]
 pub enum Token {
     ASSIGN,
@@ -24,7 +26,7 @@ pub enum Token {
     EQ,
     NotEQ,
     ILLEGAL(char),
-    IDENT(String),
-    INT(String),
+    IDENT(Rc<str>),
+    INT(Rc<str>),
     EOF,
 }
