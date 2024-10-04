@@ -1,23 +1,24 @@
-use crate::lexer::Lexer;
-use std::{error::Error, io, rc::Rc};
+use crate::{lexer::Lexer, token::Token};
+use std::{
+    error::Error,
+    io::{self, Write},
+};
 
 const PROMPT: &str = ">>";
 
 pub fn start() -> Result<(), Box<dyn Error>> {
-    let mut input = String::new();
-    print!("{}", PROMPT);
-    io::stdin().read_line(&mut input)?;
-    while !input.is_empty() {
+    io::stdin().lines().for_each(|line| {
         print!("{}", PROMPT);
-        io::stdin().read_line(&mut input)?;
-        let input = input.trim();
-        if input.is_empty() {
-            break;
+        io::stdout().flush().expect("it should've been flushed");
+        if let Ok(part) = line {
+            let lex = Lexer::new(part.into());
+            for tok in lex {
+                println!("{:?}", tok);
+                if tok == Token::EOF {
+                    break;
+                }
+            }
         }
-        let lex = Lexer::new(Rc::from(input));
-        for tok in lex {
-            println!("{:?}", tok);
-        }
-    }
+    });
     Ok(())
 }
