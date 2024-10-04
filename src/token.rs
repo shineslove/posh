@@ -23,7 +23,7 @@ pub enum Token {
     RETURN,
     EQ,
     NotEQ,
-    ILLEGAL(u8),
+    ILLEGAL(char),
     IDENT(String),
     INT(String),
     EOF,

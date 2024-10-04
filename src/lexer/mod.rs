@@ -113,7 +113,7 @@ impl Lexer {
                 } else if self.ch.is_ascii_digit() {
                     return Token::INT(self.read_number());
                 } else {
-                    Token::ILLEGAL(other)
+                    Token::ILLEGAL(char::from(other))
                 }
             }
         };

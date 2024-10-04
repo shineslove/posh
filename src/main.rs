@@ -1,5 +1,5 @@
 use poush::repl;
 fn main() {
-    println!("Hell there bud");
-    repl::start().unwrap()
+    println!("Hello there bud");
+    repl::start()
 }
