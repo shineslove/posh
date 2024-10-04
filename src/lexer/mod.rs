@@ -6,16 +6,28 @@ use super::token::Token;
 
 #[allow(dead_code)]
 #[derive(Debug)]
-struct Lexer {
+pub struct Lexer {
     input: Rc<str>,
     position: usize,
     read_position: usize,
     ch: u8,
 }
 
+impl Iterator for Lexer {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.ch != 0 {
+            Some(self.next_token())
+        } else {
+            None
+        }
+    }
+}
+
 #[allow(dead_code)]
 impl Lexer {
-    fn new(input: Rc<str>) -> Self {
+    pub fn new(input: Rc<str>) -> Self {
         let mut lex = Lexer {
             input,
             position: 0,
@@ -51,7 +63,7 @@ impl Lexer {
             "if" => Token::IF,
             "else" => Token::ELSE,
             "return" => Token::RETURN,
-            other => Token::IDENT(other),
+            other => Token::IDENT(String::from(other)),
         };
     }
 
@@ -109,12 +121,12 @@ impl Lexer {
         return tok;
     }
 
-    fn read_number(&mut self) -> &str {
+    fn read_number(&mut self) -> String {
         let position = self.position;
         while self.ch.is_ascii_digit() {
             self.read_char();
         }
-        return &self.input[position..self.position];
+        return String::from(&self.input[position..self.position]);
     }
 
     fn read_identifier(&mut self) -> &str {

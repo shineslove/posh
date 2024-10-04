@@ -1,5 +1,5 @@
-use poush::token;
+use poush::repl;
 fn main() {
-    let item = token::Token::ILLEGAL(b'=');
-    println!("{:?}", item);
+    println!("Hell there bud");
+    repl::start().unwrap()
 }

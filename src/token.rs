@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq)]
-pub enum Token<'t> {
+pub enum Token {
     ASSIGN,
     PLUS,
     MINUS,
@@ -24,7 +24,7 @@ pub enum Token<'t> {
     EQ,
     NotEQ,
     ILLEGAL(u8),
-    IDENT(&'t str),
-    INT(&'t str),
+    IDENT(String),
+    INT(String),
     EOF,
 }
